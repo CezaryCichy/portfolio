@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cezary Cichy — Backend Developer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0a0a0a;
+    --white:#ffffff;
+    --red:#c0392b;
+    --border:#1a1a1a;
+    --grey:#7a7a7a;
+    --grey-dark:#454545;
+  }
+
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    background:var(--bg);
+    color:var(--white);
+    font-family:'Space Grotesk',sans-serif;
+    overflow-x:hidden;
+  }
+  a{color:inherit;}
+
+  html, body{position:relative;}
+  #snake-bg{
+    position:absolute;
+    top:0;left:0;
+    z-index:0;
+    opacity:0.18;
+    pointer-events:none;
+    display:none;
+  }
+  #snake-bg.active{display:block;}
+
+  .page{position:relative;z-index:1;}
+
+  /* NAV */
+  nav.nav{
+    position:sticky;top:0;z-index:10;
+    display:flex;justify-content:space-between;align-items:center;
+    padding:1.25rem 3rem;
+    background:var(--bg);
+    border-bottom:1px solid var(--border);
+  }
+  .nav-left{font-family:'Space Mono',monospace;color:var(--grey);font-size:0.9rem;}
+  .nav-right{display:flex;align-items:center;gap:2rem;}
+  .nav-right a{text-decoration:none;font-size:0.95rem;transition:color .2s;}
+  .nav-right a.nav-link:hover{color:var(--red);}
+  .btn-red{
+    background:var(--red);
+    color:var(--white)!important;
+    padding:0.6rem 1.2rem;
+    border:1px solid var(--red);
+    font-family:'Space Mono',monospace;
+    font-size:0.85rem;
+    text-decoration:none;
+    transition:background .2s,color .2s;
+  }
+  .btn-red:hover{background:transparent;color:var(--red)!important;}
+
+  /* HERO */
+  .hero{
+    display:flex;justify-content:space-between;align-items:flex-start;
+    padding:6rem 3rem;
+    border-bottom:1px solid var(--border);
+    gap:2rem;flex-wrap:wrap;
+  }
+  .hero-left{max-width:700px;}
+  #location-tag{font-family:'Space Mono',monospace;color:var(--grey);margin-bottom:1.5rem;font-size:0.95rem;}
+  #hero-name{
+    font-size:clamp(3rem,9vw,8rem);
+    font-weight:700;
+    line-height:0.95;
+    letter-spacing:-0.02em;
+    text-transform:uppercase;
+  }
+  #hero-name .red{color:var(--red);}
+  #hero-subtitle{
+    font-family:'Space Mono',monospace;
+    color:var(--grey);
+    margin-top:2rem;
+    font-size:1.05rem;
+    max-width:520px;
+    line-height:1.6;
+  }
+  .hero-right{
+    display:flex;flex-direction:column;align-items:flex-end;gap:1rem;
+    font-family:'Space Mono',monospace;text-align:right;min-width:220px;
+  }
+  .availability{display:flex;align-items:center;gap:0.6rem;font-size:0.95rem;}
+  .pulse-dot{
+    width:10px;height:10px;background:var(--red);display:inline-block;
+    animation:pulse 1.6s infinite;
+  }
+  @keyframes pulse{0%{opacity:1;}50%{opacity:0.25;}100%{opacity:1;}}
+  .last-updated{font-size:0.85rem;color:var(--grey);}
+  .last-updated .red{color:var(--red);}
+
+  /* SECTIONS */
+  .section{padding:5rem 3rem;border-bottom:1px solid var(--border);}
+  .section-label{
+    font-family:'Space Mono',monospace;color:var(--red);
+    margin-bottom:2rem;font-size:0.95rem;letter-spacing:0.05em;
+  }
+
+  #about-text{max-width:800px;font-size:1.15rem;line-height:1.8;}
+  #about-text strong{color:var(--red);font-weight:700;}
+
+  /* PROJECTS */
+  .projects-grid{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;}
+  .project-card{
+    border:1px solid var(--border);
+    padding:2rem;position:relative;overflow:hidden;
+    transition:border-color .2s;
+  }
+  .project-card:hover{border-color:var(--red);}
+  .project-card.hidden{display:none;}
+  .pin-label{font-family:'Space Mono',monospace;font-size:0.8rem;color:var(--grey);margin-bottom:1rem;}
+  .project-card h3{font-size:1.4rem;margin-bottom:0.75rem;}
+  .project-card p{color:var(--grey);line-height:1.6;margin-bottom:1.5rem;font-size:0.95rem;}
+  .tags{display:flex;flex-wrap:wrap;gap:0.5rem;margin-bottom:3rem;}
+  .tags span{
+    font-family:'Space Mono',monospace;font-size:0.75rem;
+    border:1px solid var(--border);padding:0.3rem 0.6rem;color:var(--grey);
+  }
+  .github-link{
+    position:absolute;left:2rem;right:2rem;bottom:-3rem;
+    background:var(--red);color:var(--white);text-align:center;
+    padding:0.75rem;text-decoration:none;
+    font-family:'Space Mono',monospace;font-size:0.85rem;
+    transition:bottom .25s;
+  }
+  .project-card:hover .github-link{bottom:2rem;}
+
+  .show-more-btn{
+    margin-top:2rem;background:transparent;color:var(--white);
+    border:1px solid var(--border);padding:0.75rem 1.5rem;
+    font-family:'Space Mono',monospace;cursor:pointer;
+    transition:border-color .2s,color .2s;
+  }
+  .show-more-btn:hover{border-color:var(--red);color:var(--red);}
+
+  /* SKILLS */
+  .skills-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:2rem;}
+  .skill-col h3{
+    font-family:'Space Mono',monospace;color:var(--red);font-size:0.95rem;
+    margin-bottom:1rem;letter-spacing:0.05em;text-transform:uppercase;
+  }
+  .skill-col ul{list-style:none;}
+  .skill-col li{padding:0.6rem 0;border-bottom:1px solid var(--border);font-size:0.95rem;}
+
+  /* CONTACT */
+  .contact-email{
+    font-family:'Space Mono',monospace;
+    font-size:1.4rem;
+    color:var(--white);
+    text-decoration:none;
+    border-bottom:1px solid var(--border);
+    padding-bottom:0.25rem;
+    transition:color .2s,border-color .2s;
+  }
+  .contact-email:hover{color:var(--red);border-color:var(--red);}
+
+  /* FOOTER */
+  footer{
+    display:flex;justify-content:space-between;align-items:center;
+    padding:2rem 3rem;flex-wrap:wrap;gap:1rem;
+  }
+  .footer-left a{text-decoration:none;font-size:0.95rem;transition:color .2s;}
+  .footer-left a:hover{color:var(--red);}
+  #footer-currently{font-family:'Space Mono',monospace;font-size:0.75rem;color:var(--grey-dark);}
+
+  /* SNAKE TOGGLE */
+  .snake-toggle-wrap{
+    display:flex;justify-content:center;align-items:center;gap:1rem;padding:1.5rem 3rem;
+  }
+  .snake-toggle{
+    background:transparent;border:1px solid var(--border);color:var(--grey-dark);
+    font-family:'Space Mono',monospace;font-size:0.75rem;
+    padding:0.4rem 0.8rem;cursor:pointer;
+    transition:color .2s,border-color .2s;
+  }
+  .snake-toggle:hover{color:var(--red);border-color:var(--red);}
+  .snake-score{
+    font-family:'Space Mono',monospace;font-size:0.7rem;
+    color:var(--grey-dark);opacity:0.6;
+  }
+
+  /* RESPONSIVE */
+  @media (max-width:900px){
+    .hero{flex-direction:column;padding:3.5rem 1.5rem;}
+    .hero-right{align-items:flex-start;text-align:left;}
+    .projects-grid{grid-template-columns:1fr;}
+    .skills-grid{grid-template-columns:repeat(2,1fr);}
+    nav.nav{padding:1rem 1.5rem;}
+    .nav-right{gap:1.2rem;}
+    .section{padding:3.5rem 1.5rem;}
+    footer{padding:1.5rem;}
+  }
+  @media (max-width:520px){
+    .skills-grid{grid-template-columns:1fr;}
+    .nav-right{gap:0.8rem;}
+    .nav-right a.nav-link{font-size:0.85rem;}
+    .btn-red{padding:0.5rem 0.8rem;font-size:0.75rem;}
+  }
+</style>
+</head>
+<body>
+
+  <canvas id="snake-bg"></canvas>
+
+  <div class="page">
+
+    <nav class="nav">
+      <div class="nav-left" id="nav-left"></div>
+      <div class="nav-right">
+        <a class="nav-link" href="#projects">Projects</a>
+        <a class="nav-link" href="#about">About</a>
+        <a id="cv-download" class="btn-red" href="#" download>Download CV ↓</a>
+      </div>
+    </nav>
+
+    <section class="hero">
+      <div class="hero-left">
+        <p id="location-tag"></p>
+        <h1 id="hero-name"></h1>
+        <p id="hero-subtitle"></p>
+      </div>
+      <div class="hero-right">
+        <div class="availability"><span class="pulse-dot"></span> Available <span id="available-date"></span></div>
+        <div class="last-updated">Last updated: <span class="red" id="last-updated-date"></span></div>
+      </div>
+    </section>
+
+    <section class="section" id="about">
+      <div class="section-label">001 / About</div>
+      <p id="about-text"></p>
+    </section>
+
+    <section class="section" id="projects">
+      <div class="section-label">002 / Projects</div>
+      <div class="projects-grid" id="projects-grid"></div>
+      <button id="show-more" class="show-more-btn">+ show more</button>
+    </section>
+
+    <section class="section" id="skills">
+      <div class="section-label">003 / Skills</div>
+      <div class="skills-grid" id="skills-grid"></div>
+    </section>
+
+    <section class="section" id="contact">
+      <div class="section-label">004 / Contact</div>
+      <a id="contact-email" class="contact-email" href="#"></a>
+    </section>
+
+    <footer>
+      <div class="footer-left">
+        <a id="footer-github" href="#" target="_blank" rel="noopener noreferrer">GitHub</a>
+        &nbsp;|&nbsp;
+        <a id="footer-linkedin" href="#" target="_blank" rel="noopener noreferrer">LinkedIn</a>
+      </div>
+      <div id="footer-currently"></div>
+    </footer>
+
+    <div class="snake-toggle-wrap">
+      <button id="snake-toggle" class="snake-toggle">&gt; activate snake</button>
+      <span id="snake-score" class="snake-score"></span>
+    </div>
+
+  </div>
+
+<script>
+  // ---------------------------------------------------------------------
+  // CONFIG — edit everything about this site's content here.
+  // No need to touch the HTML/CSS/JS below to update copy, links or projects.
+  // ---------------------------------------------------------------------
+  const CONFIG = {
+    name: "Cezary Cichy",
+    initials: "CC",
+    year: "2026",
+    location: "navan, ireland — cs student",
+    tagline: "Backend developer in progress. CS student at Maynooth University, looking for internships.",
+    available: "Jan 2027",
+    lastUpdated: "Jul 2026",
+    currently: "watching the world cup",
+    email: "cezarycichy03@gmail.com",
+    github: "https://github.com/CezaryCichy",
+    linkedin: "https://www.linkedin.com/in/cezary-cichy-b894b0389/",
+    cvUrl: "cv.pdf",
+    // Wrap words in **double asterisks** to render them bold/red in the About section.
+    aboutText: "Been hands-on with computers since I was **6 years old** — built my first PC at 9 and never stopped tinkering. I love problem solving, finding the simplest fix to a complicated mess. I study **Computer Science at Maynooth University** and specialise in **Java backend development**. I day trade the NY session occasionally, which pushed me to build a proper trade journal to track my own performance. Looking for a placement starting **January 2027**.",
+    skills: {
+      Languages: ["Java", "JavaScript", "HTML/CSS"],
+      Frameworks: ["Spring Boot", "Maven", "Node.js"],
+      Databases: ["MySQL", "MongoDB"],
+      Tools: ["Git/GitHub", "VS Code", "IntelliJ"]
+    },
+    projects: [
+      {
+        pinned: true,
+        title: "Trade Journal API",
+        desc: "REST API for logging trades, tracking P&L and win rate. Built because I actually needed it.",
+        tags: ["Java", "Spring Boot", "MySQL", "Swagger"],
+        github: "https://github.com/CezaryCichy/trade-journal"
+      },
+      {
+        pinned: true,
+        title: "Subway Calorie Counter",
+        desc: "No calorie data existed online so I sourced it myself and built the tool. My favourite project.",
+        tags: ["Java", "Swing", "Maven"],
+        github: "https://github.com/cezarycichy/subway-calorie-counter"
+      },
+      {
+        pinned: false,
+        title: "Grade Tracker",
+        desc: "Web-based grade tracking app with a Node.js backend.",
+        tags: ["HTML", "JavaScript", "Node.js"],
+        github: "https://github.com/CezaryCichy/grade-tracker"
+      }
+    ]
+  };
+
+  // ---------------------------------------------------------------------
+  // RENDER
+  // ---------------------------------------------------------------------
+  document.addEventListener('DOMContentLoaded', () => {
+    renderNav();
+    renderHero();
+    renderAbout();
+    renderProjects();
+    renderSkills();
+    renderContact();
+    renderFooter();
+  });
+
+  function renderNav(){
+    document.getElementById('nav-left').textContent = `${CONFIG.initials} / ${CONFIG.year}`;
+    document.getElementById('cv-download').href = CONFIG.cvUrl;
+  }
+
+  function renderHero(){
+    document.getElementById('location-tag').textContent = `// ${CONFIG.location}`;
+
+    const parts = CONFIG.name.trim().split(' ');
+    const last = parts.pop();
+    const first = parts.join(' ');
+    document.getElementById('hero-name').innerHTML =
+      `${first.toUpperCase()}<br><span class="red">${last.toUpperCase()}.</span>`;
+
+    document.getElementById('hero-subtitle').textContent = CONFIG.tagline;
+    document.getElementById('available-date').textContent = CONFIG.available;
+    document.getElementById('last-updated-date').textContent = CONFIG.lastUpdated;
+  }
+
+  function renderAbout(){
+    const html = CONFIG.aboutText.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+    document.getElementById('about-text').innerHTML = html;
+  }
+
+  let showingAll = false;
+  function renderProjects(){
+    const grid = document.getElementById('projects-grid');
+    grid.innerHTML = '';
+
+    CONFIG.projects.forEach(p => {
+      const card = document.createElement('div');
+      card.className = 'project-card' + (p.pinned ? '' : ' hidden extra-card');
+      card.innerHTML = `
+        ${p.pinned ? '<div class="pin-label">📌 pinned</div>' : ''}
+        <h3>${p.title}</h3>
+        <p>${p.desc}</p>
+        <div class="tags">${p.tags.map(t => `<span>${t}</span>`).join('')}</div>
+        <a class="github-link" href="${p.github}" target="_blank" rel="noopener noreferrer">View on GitHub →</a>
+      `;
+      grid.appendChild(card);
+    });
+
+    const btn = document.getElementById('show-more');
+    const hasExtra = CONFIG.projects.some(p => !p.pinned);
+    btn.style.display = hasExtra ? 'inline-block' : 'none';
+
+    btn.addEventListener('click', () => {
+      showingAll = !showingAll;
+      document.querySelectorAll('.extra-card').forEach(c => c.classList.toggle('hidden', !showingAll));
+      btn.textContent = showingAll ? '- show less' : '+ show more';
+    });
+  }
+
+  function renderSkills(){
+    const grid = document.getElementById('skills-grid');
+    grid.innerHTML = '';
+    Object.entries(CONFIG.skills).forEach(([category, items]) => {
+      const col = document.createElement('div');
+      col.className = 'skill-col';
+      col.innerHTML = `<h3>${category}</h3><ul>${items.map(i => `<li>${i}</li>`).join('')}</ul>`;
+      grid.appendChild(col);
+    });
+  }
+
+  function renderContact(){
+    const email = document.getElementById('contact-email');
+    email.href = `mailto:${CONFIG.email}`;
+    email.textContent = CONFIG.email;
+  }
+
+  function renderFooter(){
+    const gh = document.getElementById('footer-github');
+    gh.href = CONFIG.github;
+    const li = document.getElementById('footer-linkedin');
+    li.href = CONFIG.linkedin;
+    document.getElementById('footer-currently').textContent = `currently: ${CONFIG.currently}`;
+  }
+
+  // ---------------------------------------------------------------------
+  // SNAKE BACKGROUND — auto-running, on by default, toggled at page bottom
+  // ---------------------------------------------------------------------
+  (function(){
+    const canvas = document.getElementById('snake-bg');
+    const ctx = canvas.getContext('2d');
+    const toggleBtn = document.getElementById('snake-toggle');
+    const scoreEl = document.getElementById('snake-score');
+    const CELL = 20;
+    const START_LENGTH = 6;
+    let cols, rows, snake, food, tickHandle, running = false, score = 0;
+
+    function updateScore(){
+      scoreEl.textContent = `score: ${score}`;
+    }
+
+    function resize(){
+      const docHeight = Math.max(document.documentElement.scrollHeight, window.innerHeight);
+      const docWidth = Math.max(document.documentElement.scrollWidth, window.innerWidth);
+      canvas.width = docWidth;
+      canvas.height = docHeight;
+      cols = Math.max(1, Math.floor(canvas.width / CELL));
+      rows = Math.max(1, Math.floor(canvas.height / CELL));
+    }
+    window.addEventListener('resize', resize);
+    let scrollTimeout;
+    window.addEventListener('scroll', () => {
+      if (!running) return;
+      clearTimeout(scrollTimeout);
+      scrollTimeout = setTimeout(() => {
+        if (!isFoodInView()) spawnFood();
+      }, 200);
+    }, { passive: true });
+    resize();
+
+    function resync(){
+      resize();
+      if (running && food && !isFoodInView()) spawnFood();
+    }
+    window.addEventListener('load', resync);
+    if (document.fonts && document.fonts.ready) {
+      document.fonts.ready.then(resync);
+    }
+
+    function reset(){
+      resize();
+      const startX = Math.floor(cols / 2);
+      const startY = Math.floor(rows / 2);
+      snake = [];
+      for (let i = 0; i < START_LENGTH; i++) snake.push({ x: startX - i, y: startY });
+      score = 0;
+      updateScore();
+      spawnFood();
+    }
+
+    function spawnFood(){
+      // Prefer spawning within the user's current viewport so food doesn't
+      // land somewhere they'd have to scroll to see.
+      const viewCols = Math.max(1, Math.floor(window.innerWidth / CELL));
+      const viewRows = Math.max(1, Math.floor(window.innerHeight / CELL));
+      const minCol = Math.min(Math.floor(window.scrollX / CELL), Math.max(0, cols - viewCols));
+      const minRow = Math.min(Math.floor(window.scrollY / CELL), Math.max(0, rows - viewRows));
+      const maxCol = Math.min(cols - 1, minCol + viewCols - 1);
+      const maxRow = Math.min(rows - 1, minRow + viewRows - 1);
+
+      let candidate;
+      let attempts = 0;
+      do {
+        candidate = {
+          x: minCol + Math.floor(Math.random() * (maxCol - minCol + 1)),
+          y: minRow + Math.floor(Math.random() * (maxRow - minRow + 1))
+        };
+        attempts++;
+      } while (occupied(candidate.x, candidate.y) && attempts < 50);
+      food = candidate;
+    }
+
+    function occupied(x, y){
+      return snake.some(s => s.x === x && s.y === y);
+    }
+
+    function isFoodInView(){
+      if (!food) return false;
+      const viewCols = Math.max(1, Math.floor(window.innerWidth / CELL));
+      const viewRows = Math.max(1, Math.floor(window.innerHeight / CELL));
+      const minCol = Math.floor(window.scrollX / CELL);
+      const minRow = Math.floor(window.scrollY / CELL);
+      return food.x >= minCol && food.x < minCol + viewCols &&
+             food.y >= minRow && food.y < minRow + viewRows;
+    }
+
+    function wrap(x, y){
+      return { x: ((x % cols) + cols) % cols, y: ((y % rows) + rows) % rows };
+    }
+
+    function step(){
+      const head = snake[0];
+      const dx = food.x - head.x;
+      const dy = food.y - head.y;
+      const candidates = [];
+
+      if (Math.abs(dx) > Math.abs(dy)) {
+        candidates.push({ x: head.x + Math.sign(dx), y: head.y });
+        candidates.push({ x: head.x, y: head.y + Math.sign(dy || 1) });
+      } else {
+        candidates.push({ x: head.x, y: head.y + Math.sign(dy) });
+        candidates.push({ x: head.x + Math.sign(dx || 1), y: head.y });
+      }
+      candidates.push(
+        { x: head.x + 1, y: head.y }, { x: head.x - 1, y: head.y },
+        { x: head.x, y: head.y + 1 }, { x: head.x, y: head.y - 1 }
+      );
+
+      let next = null;
+      for (const c of candidates) {
+        const w = wrap(c.x, c.y);
+        if (!occupied(w.x, w.y)) { next = w; break; }
+      }
+
+      if (!next) { reset(); return; }
+
+      snake.unshift(next);
+      if (next.x === food.x && next.y === food.y) {
+        score++;
+        updateScore();
+        spawnFood();
+      } else {
+        snake.pop();
+      }
+    }
+
+    function drawApple(){
+      const x = food.x * CELL;
+      const y = food.y * CELL;
+
+      // flat square block, brutalist style — solid red with a hollow outline
+      ctx.fillStyle = 'rgba(192,57,43,0.95)';
+      ctx.fillRect(x, y, CELL - 2, CELL - 2);
+      ctx.strokeStyle = 'rgba(10,10,10,0.9)';
+      ctx.lineWidth = 2;
+      ctx.strokeRect(x + 3, y + 3, CELL - 8, CELL - 8);
+    }
+
+    function draw(){
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      snake.forEach((seg, i) => {
+        const alpha = Math.max(0.15, 1 - i / snake.length);
+        ctx.fillStyle = `rgba(192,57,43,${alpha})`;
+        ctx.fillRect(seg.x * CELL, seg.y * CELL, CELL - 2, CELL - 2);
+      });
+      drawApple();
+    }
+
+    function tick(){
+      step();
+      draw();
+    }
+
+    function start(){
+      reset();
+      canvas.classList.add('active');
+      running = true;
+      tickHandle = setInterval(tick, 110);
+      toggleBtn.textContent = '> deactivate snake';
+      scoreEl.style.display = 'inline';
+    }
+
+    function stop(){
+      running = false;
+      clearInterval(tickHandle);
+      canvas.classList.remove('active');
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      toggleBtn.textContent = '> activate snake';
+      scoreEl.style.display = 'none';
+    }
+
+    toggleBtn.addEventListener('click', () => {
+      if (running) stop(); else start();
+    });
+
+    start();
+  })();
+</script>
+
+</body>
+</html>
