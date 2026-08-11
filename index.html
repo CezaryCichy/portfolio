@@ -3,193 +3,329 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Cezary Cichy — Backend Developer</title>
+<title>Cezary Cichy — Computer Science Student &amp; Developer</title>
+<meta name="description" content="Cezary Cichy — Computer Science student at Maynooth University and backend developer, currently applying for software engineering internships.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 <style>
   :root{
-    --bg:#0a0a0a;
-    --white:#ffffff;
-    --red:#c0392b;
-    --border:#1a1a1a;
-    --grey:#7a7a7a;
-    --grey-dark:#454545;
+    --bg:#004E89;
+    --surface:#1A659E;
+    --surface-soft:rgba(26,101,158,0.18);
+    --border:#1A659E;
+    --divider:rgba(26,101,158,0.35);
+    --accent:#FF6B35;
+    --accent-soft:rgba(255,107,53,0.1);
+    --text:#EFEFD0;
+    --text-secondary:#F7C59F;
+    --text-muted:rgba(239,239,208,0.45);
   }
 
   *{margin:0;padding:0;box-sizing:border-box;}
-  html{scroll-behavior:smooth;}
+  html{scroll-behavior:smooth;overflow-x:hidden;width:100%;}
   body{
     background:var(--bg);
-    color:var(--white);
+    color:var(--text);
     font-family:'Space Grotesk',sans-serif;
     overflow-x:hidden;
+    width:100%;
   }
   a{color:inherit;}
+  a:focus-visible, button:focus-visible{outline:2px solid var(--accent);outline-offset:3px;}
 
   html, body{position:relative;}
   #snake-bg{
     position:absolute;
     top:0;left:0;
     z-index:0;
-    opacity:0.18;
+    opacity:0;
     pointer-events:none;
-    display:none;
+    display:block;
+    will-change:opacity;
   }
-  #snake-bg.active{display:block;}
 
   .page{position:relative;z-index:1;}
 
   /* NAV */
   nav.nav{
-    position:sticky;top:0;z-index:10;
+    position:sticky;top:0;z-index:30;
     display:flex;justify-content:space-between;align-items:center;
     padding:1.25rem 3rem;
-    background:var(--bg);
-    border-bottom:1px solid var(--border);
+    background:rgba(0,66,116,0.88);
+    -webkit-backdrop-filter:blur(10px);
+    backdrop-filter:blur(10px);
+    border-bottom:1px solid var(--divider);
+    transition:padding .25s ease,box-shadow .25s ease;
   }
-  .nav-left{font-family:'Space Mono',monospace;color:var(--grey);font-size:0.9rem;}
+  nav.nav.scrolled{
+    padding-top:0.85rem;padding-bottom:0.85rem;
+    box-shadow:0 8px 24px rgba(0,20,40,0.35);
+  }
+  .nav-left{font-family:'Space Mono',monospace;color:var(--text-secondary);font-size:0.9rem;}
   .nav-right{display:flex;align-items:center;gap:2rem;}
-  .nav-right a{text-decoration:none;font-size:0.95rem;transition:color .2s;}
-  .nav-right a.nav-link:hover{color:var(--red);}
+  .nav-right a{text-decoration:none;font-size:0.95rem;transition:color .2s;color:var(--text);}
+  .nav-right a.nav-link{position:relative;padding:0.2rem 0;}
+  .nav-right a.nav-link::after{
+    content:"";position:absolute;left:0;bottom:-4px;height:2px;width:0;
+    background:var(--accent);transition:width .2s ease;
+  }
+  .nav-right a.nav-link:hover{color:var(--accent);}
+  .nav-right a.nav-link:hover::after,
+  .nav-right a.nav-link.active::after{width:100%;}
+  .nav-right a.nav-link.active{color:var(--accent);}
   .btn-red{
-    background:var(--red);
-    color:var(--white)!important;
+    background:var(--accent);
+    color:var(--bg)!important;
     padding:0.6rem 1.2rem;
-    border:1px solid var(--red);
+    border:1px solid var(--accent);
     font-family:'Space Mono',monospace;
     font-size:0.85rem;
+    font-weight:700;
     text-decoration:none;
-    transition:background .2s,color .2s;
+    transition:filter .2s,transform .15s,box-shadow .2s;
+    display:inline-flex;align-items:center;
   }
-  .btn-red:hover{background:transparent;color:var(--red)!important;}
+  .btn-red:hover{filter:brightness(1.08);transform:translateY(-2px);box-shadow:0 8px 20px var(--accent-soft);}
+
+  .nav-toggle{
+    display:none;
+    flex-direction:column;justify-content:center;align-items:center;gap:5px;
+    width:44px;height:44px;
+    background:transparent;border:1px solid var(--border);
+    cursor:pointer;position:relative;z-index:40;flex-shrink:0;
+  }
+  .nav-toggle span{display:block;width:20px;height:2px;background:var(--text);transition:transform .25s ease,opacity .25s ease;}
+  .nav-toggle.open span:nth-child(1){transform:translateY(7px) rotate(45deg);}
+  .nav-toggle.open span:nth-child(2){opacity:0;}
+  .nav-toggle.open span:nth-child(3){transform:translateY(-7px) rotate(-45deg);}
+
+  /* BUTTONS (hero / contact) */
+  .btn{
+    display:inline-flex;align-items:center;gap:0.55rem;
+    font-family:'Space Mono',monospace;font-size:0.9rem;font-weight:700;
+    padding:0.9rem 1.6rem;min-height:44px;
+    text-decoration:none;cursor:pointer;
+    border:1px solid var(--accent);
+    transition:filter .2s ease,background .2s ease,color .2s ease,transform .15s ease,border-color .2s ease,box-shadow .2s ease;
+  }
+  .btn svg{width:16px;height:16px;transition:transform .2s ease;flex-shrink:0;}
+  .btn-primary{background:var(--accent);color:var(--bg);}
+  .btn-primary:hover{filter:brightness(1.08);transform:translateY(-2px);box-shadow:0 8px 20px var(--accent-soft);}
+  .btn-outline{background:transparent;color:var(--text);border-color:var(--text);}
+  .btn-outline:hover{border-color:var(--accent);color:var(--accent);transform:translateY(-2px);}
+  .btn:hover svg{transform:translateX(3px);}
+  .btn-large{font-size:1rem;padding:1.05rem 1.9rem;}
 
   /* HERO */
   .hero{
+    position:relative;overflow:hidden;
     display:flex;justify-content:space-between;align-items:flex-start;
     padding:6rem 3rem;
-    border-bottom:1px solid var(--border);
+    border-bottom:1px solid var(--divider);
     gap:2rem;flex-wrap:wrap;
+    background:
+      radial-gradient(ellipse 60% 55% at 88% 0%, rgba(26,101,158,0.4), transparent 65%),
+      linear-gradient(rgba(239,239,208,0.025) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(239,239,208,0.025) 1px, transparent 1px),
+      var(--bg);
+    background-size:auto,42px 42px,42px 42px,auto;
   }
+  .hero-bg-decor{
+    position:absolute;right:-0.5rem;bottom:-3rem;
+    font-family:'Space Mono',monospace;font-weight:700;
+    font-size:clamp(6rem,18vw,14rem);
+    color:rgba(255,107,53,0.06);
+    pointer-events:none;user-select:none;line-height:1;z-index:0;
+  }
+  .hero-left, .hero-right{position:relative;z-index:1;}
   .hero-left{max-width:700px;}
-  #location-tag{font-family:'Space Mono',monospace;color:var(--grey);margin-bottom:1.5rem;font-size:0.95rem;}
+  #location-tag{font-family:'Space Mono',monospace;color:var(--text-secondary);margin-bottom:1.5rem;font-size:0.95rem;}
   #hero-name{
     font-size:clamp(3rem,9vw,8rem);
     font-weight:700;
     line-height:0.95;
     letter-spacing:-0.02em;
     text-transform:uppercase;
+    color:var(--text);
   }
-  #hero-name .red{color:var(--red);}
+  #hero-name .accent{color:var(--accent);}
+  #hero-role{
+    font-size:clamp(1.05rem,2.4vw,1.4rem);
+    font-weight:500;
+    margin-top:1.1rem;
+    color:var(--text);
+  }
   #hero-subtitle{
     font-family:'Space Mono',monospace;
-    color:var(--grey);
-    margin-top:2rem;
-    font-size:1.05rem;
-    max-width:520px;
-    line-height:1.6;
+    color:var(--text-secondary);
+    margin-top:1.25rem;
+    font-size:1.02rem;
+    max-width:540px;
+    line-height:1.7;
   }
+  .hero-cta-row{display:flex;flex-wrap:wrap;gap:1rem;margin-top:2.25rem;}
+
   .hero-right{
-    display:flex;flex-direction:column;align-items:flex-end;gap:1rem;
+    display:flex;flex-direction:column;align-items:flex-end;gap:1.1rem;
     font-family:'Space Mono',monospace;text-align:right;min-width:220px;
   }
-  .availability{display:flex;align-items:center;gap:0.6rem;font-size:0.95rem;}
+  .status-badge{
+    display:flex;align-items:center;gap:0.6rem;font-size:0.95rem;
+    border:1px solid var(--border);padding:0.55rem 0.9rem;
+    background:var(--accent-soft);
+    color:var(--text);
+  }
   .pulse-dot{
-    width:10px;height:10px;background:var(--red);display:inline-block;
+    width:9px;height:9px;background:var(--accent);display:inline-block;border-radius:50%;flex-shrink:0;
     animation:pulse 1.6s infinite;
   }
   @keyframes pulse{0%{opacity:1;}50%{opacity:0.25;}100%{opacity:1;}}
-  .last-updated{font-size:0.85rem;color:var(--grey);}
-  .last-updated .red{color:var(--red);}
+  .hero-meta{display:flex;flex-direction:column;gap:0.35rem;}
+  .meta-line{font-size:0.85rem;color:var(--text-secondary);}
+  .meta-line .accent{color:var(--accent);}
 
   /* SECTIONS */
-  .section{padding:5rem 3rem;border-bottom:1px solid var(--border);}
+  .section{padding:5rem 3rem;border-bottom:1px solid var(--divider);}
   .section-label{
-    font-family:'Space Mono',monospace;color:var(--red);
+    font-family:'Space Mono',monospace;color:var(--accent);
     margin-bottom:2rem;font-size:0.95rem;letter-spacing:0.05em;
   }
 
-  #about-text{max-width:800px;font-size:1.15rem;line-height:1.8;}
-  #about-text strong{color:var(--red);font-weight:700;}
+  /* Scroll reveal */
+  .reveal{opacity:0;transform:translateY(18px);transition:opacity .55s ease,transform .55s ease;transition-delay:var(--delay,0ms);}
+  .reveal.is-visible{opacity:1;transform:none;}
+
+  /* ABOUT */
+  .about-grid{display:grid;grid-template-columns:1.4fr 1fr;gap:3rem;align-items:start;}
+  #about-text{font-size:1.15rem;line-height:1.8;color:var(--text);}
+  #about-text strong{color:var(--accent);font-weight:700;}
+  .about-chips{display:flex;flex-wrap:wrap;gap:0.6rem;margin-top:1.75rem;}
+  .about-chip{
+    font-family:'Space Mono',monospace;font-size:0.8rem;color:var(--text-secondary);
+    border:1px solid var(--border);padding:0.4rem 0.75rem;
+    transition:border-color .2s ease,color .2s ease,background .2s ease;
+  }
+  .about-chip:hover{border-color:var(--accent);color:var(--text);background:var(--accent-soft);}
+  .about-stats{display:grid;grid-template-columns:repeat(2,1fr);gap:1.25rem;}
+  .about-stat{border:1px solid var(--border);background:var(--surface-soft);padding:1.25rem;}
+  .about-stat-value{font-family:'Space Mono',monospace;color:var(--accent);font-size:1.3rem;font-weight:700;margin-bottom:0.4rem;word-break:break-word;}
+  .about-stat-label{font-size:0.8rem;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.03em;}
 
   /* PROJECTS */
   .projects-grid{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;}
   .project-card{
     border:1px solid var(--border);
+    background:var(--surface-soft);
     padding:2rem;position:relative;overflow:hidden;
-    transition:border-color .2s;
+    transition:border-color .2s ease,transform .2s ease,box-shadow .2s ease;
   }
-  .project-card:hover{border-color:var(--red);}
+  .project-card:hover{border-color:var(--accent);transform:translateY(-4px);box-shadow:0 10px 28px rgba(255,107,53,0.12);}
   .project-card.hidden{display:none;}
-  .pin-label{font-family:'Space Mono',monospace;font-size:0.8rem;color:var(--grey);margin-bottom:1rem;}
-  .project-card h3{font-size:1.4rem;margin-bottom:0.75rem;}
-  .project-card p{color:var(--grey);line-height:1.6;margin-bottom:1.5rem;font-size:0.95rem;}
-  .tags{display:flex;flex-wrap:wrap;gap:0.5rem;margin-bottom:3rem;}
+  .project-index{
+    position:absolute;top:1rem;right:1.25rem;
+    font-family:'Space Mono',monospace;font-weight:700;
+    font-size:2.75rem;color:rgba(239,239,208,0.06);
+    transition:color .25s ease,transform .25s ease;
+    line-height:1;
+  }
+  .project-card:hover .project-index{color:rgba(255,107,53,0.25);transform:scale(1.08);}
+  .pin-label{font-family:'Space Mono',monospace;font-size:0.8rem;color:var(--text-secondary);margin-bottom:1rem;position:relative;z-index:1;}
+  .project-card h3{font-size:1.4rem;margin-bottom:0.75rem;position:relative;z-index:1;color:var(--text);}
+  .project-card p{color:var(--text-secondary);line-height:1.6;margin-bottom:1.5rem;font-size:0.95rem;position:relative;z-index:1;max-width:38rem;}
+  .tags{display:flex;flex-wrap:wrap;gap:0.5rem;margin-bottom:3rem;position:relative;z-index:1;}
   .tags span{
     font-family:'Space Mono',monospace;font-size:0.75rem;
-    border:1px solid var(--border);padding:0.3rem 0.6rem;color:var(--grey);
+    border:1px solid var(--border);padding:0.3rem 0.6rem;color:var(--text-secondary);
   }
   .github-link{
     position:absolute;left:2rem;right:2rem;bottom:-3rem;
-    background:var(--red);color:var(--white);text-align:center;
-    padding:0.75rem;text-decoration:none;
+    background:var(--accent);color:var(--bg);text-align:center;
+    padding:0.75rem;text-decoration:none;font-weight:700;
     font-family:'Space Mono',monospace;font-size:0.85rem;
     transition:bottom .25s;
+    display:flex;align-items:center;justify-content:center;gap:0.4rem;
   }
+  .github-link .arrow{display:inline-block;transition:transform .25s ease;}
   .project-card:hover .github-link{bottom:2rem;}
+  .project-card:hover .github-link .arrow{transform:translateX(4px);}
+
+  .project-featured{
+    grid-column:1 / -1;
+    padding:2.75rem;
+    background:linear-gradient(135deg, rgba(255,107,53,0.09), var(--surface-soft) 60%);
+  }
+  .project-featured h3{font-size:2rem;}
+  .project-featured p{font-size:1.05rem;}
+  .project-featured .project-index{font-size:4rem;}
 
   .show-more-btn{
-    margin-top:2rem;background:transparent;color:var(--white);
-    border:1px solid var(--border);padding:0.75rem 1.5rem;
+    margin-top:2rem;background:transparent;color:var(--text);
+    border:1px solid var(--border);padding:0.75rem 1.5rem;min-height:40px;
     font-family:'Space Mono',monospace;cursor:pointer;
     transition:border-color .2s,color .2s;
   }
-  .show-more-btn:hover{border-color:var(--red);color:var(--red);}
+  .show-more-btn:hover{border-color:var(--accent);color:var(--accent);}
 
   /* SKILLS */
   .skills-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:2rem;}
   .skill-col h3{
-    font-family:'Space Mono',monospace;color:var(--red);font-size:0.95rem;
+    font-family:'Space Mono',monospace;color:var(--accent);font-size:0.95rem;
     margin-bottom:1rem;letter-spacing:0.05em;text-transform:uppercase;
   }
-  .skill-col ul{list-style:none;}
-  .skill-col li{padding:0.6rem 0;border-bottom:1px solid var(--border);font-size:0.95rem;}
+  .skill-pills{display:flex;flex-wrap:wrap;gap:0.6rem;}
+  .skill-pill{
+    font-family:'Space Mono',monospace;font-size:0.82rem;color:var(--text-secondary);
+    border:1px solid var(--border);padding:0.45rem 0.85rem;
+    transition:border-color .2s ease,color .2s ease,background .2s ease,transform .2s ease;
+  }
+  .skill-pill:hover{border-color:var(--accent);color:var(--text);background:var(--accent-soft);transform:translateY(-2px);}
 
   /* CONTACT */
-  .contact-email{
-    font-family:'Space Mono',monospace;
-    font-size:1.4rem;
-    color:var(--white);
-    text-decoration:none;
-    border-bottom:1px solid var(--border);
-    padding-bottom:0.25rem;
-    transition:color .2s,border-color .2s;
+  .contact-heading{
+    font-size:clamp(2.1rem,6vw,4rem);font-weight:700;
+    text-transform:uppercase;letter-spacing:-0.01em;margin-bottom:1rem;
+    color:var(--text);
   }
-  .contact-email:hover{color:var(--red);border-color:var(--red);}
+  .contact-sub{
+    font-family:'Space Mono',monospace;color:var(--text-secondary);
+    max-width:540px;margin-bottom:2.5rem;font-size:1rem;line-height:1.7;
+  }
+  .contact-sub .accent{color:var(--accent);}
+  .contact-cta-row{margin-bottom:2.5rem;}
+  .contact-socials{display:flex;gap:1rem;}
+
+  .social-icon{
+    display:inline-flex;align-items:center;justify-content:center;
+    width:44px;height:44px;
+    border:1px solid var(--border);color:var(--text);
+    transition:color .2s ease,border-color .2s ease,transform .2s ease,background .2s ease;
+  }
+  .social-icon svg{width:20px;height:20px;}
+  .social-icon:hover{color:var(--accent);border-color:var(--accent);background:var(--accent-soft);transform:translateY(-3px) scale(1.06);}
 
   /* FOOTER */
   footer{
     display:flex;justify-content:space-between;align-items:center;
     padding:2rem 3rem;flex-wrap:wrap;gap:1rem;
   }
-  .footer-left a{text-decoration:none;font-size:0.95rem;transition:color .2s;}
-  .footer-left a:hover{color:var(--red);}
-  #footer-currently{font-family:'Space Mono',monospace;font-size:0.75rem;color:var(--grey-dark);}
+  .footer-left{display:flex;gap:0.75rem;}
+  #footer-currently{font-family:'Space Mono',monospace;font-size:0.75rem;color:var(--text-muted);}
 
   /* SNAKE TOGGLE */
   .snake-toggle-wrap{
     display:flex;justify-content:center;align-items:center;gap:1rem;padding:1.5rem 3rem;
   }
   .snake-toggle{
-    background:transparent;border:1px solid var(--border);color:var(--grey-dark);
+    background:transparent;border:1px solid var(--border);color:var(--text-muted);
     font-family:'Space Mono',monospace;font-size:0.75rem;
-    padding:0.4rem 0.8rem;cursor:pointer;
+    padding:0.4rem 0.8rem;min-height:40px;display:inline-flex;align-items:center;cursor:pointer;
     transition:color .2s,border-color .2s;
   }
-  .snake-toggle:hover{color:var(--red);border-color:var(--red);}
+  .snake-toggle:hover{color:var(--accent);border-color:var(--accent);}
   .snake-score{
     font-family:'Space Mono',monospace;font-size:0.7rem;
-    color:var(--grey-dark);opacity:0.6;
+    color:var(--text-muted);
   }
 
   /* RESPONSIVE */
@@ -197,17 +333,54 @@
     .hero{flex-direction:column;padding:3.5rem 1.5rem;}
     .hero-right{align-items:flex-start;text-align:left;}
     .projects-grid{grid-template-columns:1fr;}
+    .project-featured{padding:2rem;}
     .skills-grid{grid-template-columns:repeat(2,1fr);}
     nav.nav{padding:1rem 1.5rem;}
     .nav-right{gap:1.2rem;}
     .section{padding:3.5rem 1.5rem;}
     footer{padding:1.5rem;}
+    .about-grid{grid-template-columns:1fr;gap:2rem;}
+    .about-stats{grid-template-columns:repeat(2,1fr);}
   }
+
+  @media (max-width:760px){
+    .nav-toggle{display:flex;}
+    .nav-right{
+      position:fixed;top:0;right:0;bottom:0;
+      width:100%;max-width:340px;
+      display:flex;flex-direction:column;
+      justify-content:center;align-items:flex-start;
+      gap:0;background:var(--bg);
+      border-left:1px solid var(--border);
+      padding:2rem 2rem;
+      transform:translateX(100%);
+      transition:transform .3s ease;
+      z-index:35;
+    }
+    .nav-right.open{transform:translateX(0);}
+    .nav-right a.nav-link{
+      font-size:1.6rem;padding:1rem 0;width:100%;
+      border-bottom:1px solid var(--border);
+      font-family:'Space Mono',monospace;text-transform:uppercase;
+    }
+    .nav-right a.nav-link::after{display:none;}
+    .nav-right .btn-red{margin-top:2rem;font-size:1rem;padding:0.9rem 1.5rem;}
+    body.nav-open{overflow:hidden;}
+  }
+
   @media (max-width:520px){
     .skills-grid{grid-template-columns:1fr;}
-    .nav-right{gap:0.8rem;}
-    .nav-right a.nav-link{font-size:0.85rem;}
-    .btn-red{padding:0.5rem 0.8rem;font-size:0.75rem;}
+    .about-stats{grid-template-columns:1fr 1fr;}
+    .hero-cta-row{flex-direction:column;align-items:stretch;}
+    .hero-cta-row .btn{justify-content:center;}
+    .status-badge{width:100%;box-sizing:border-box;}
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    html{scroll-behavior:auto;}
+    .reveal{opacity:1!important;transform:none!important;transition:none!important;}
+    .pulse-dot{animation:none!important;opacity:1;}
+    *{animation-duration:0.001ms!important;animation-iteration-count:1!important;transition-duration:0.001ms!important;}
   }
 </style>
 </head>
@@ -217,30 +390,56 @@
 
   <div class="page">
 
-    <nav class="nav">
+    <nav class="nav" id="nav">
       <div class="nav-left" id="nav-left"></div>
-      <div class="nav-right">
-        <a class="nav-link" href="#projects">Projects</a>
-        <a class="nav-link" href="#about">About</a>
+      <button type="button" class="nav-toggle" id="nav-toggle" aria-expanded="false" aria-controls="nav-menu" aria-label="Open menu">
+        <span></span><span></span><span></span>
+      </button>
+      <div class="nav-right" id="nav-menu">
+        <a class="nav-link" href="#about" data-nav="about">About</a>
+        <a class="nav-link" href="#projects" data-nav="projects">Projects</a>
+        <a class="nav-link" href="#skills" data-nav="skills">Skills</a>
+        <a class="nav-link" href="#contact" data-nav="contact">Contact</a>
         <a id="cv-download" class="btn-red" href="#" download>Download CV ↓</a>
       </div>
     </nav>
 
-    <section class="hero">
+    <section class="hero" id="hero">
+      <div class="hero-bg-decor" aria-hidden="true">&lt;/&gt;</div>
       <div class="hero-left">
         <p id="location-tag"></p>
         <h1 id="hero-name"></h1>
+        <p id="hero-role"></p>
         <p id="hero-subtitle"></p>
+        <div class="hero-cta-row">
+          <a href="#projects" class="btn btn-primary">
+            View my work
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+          </a>
+          <a id="cv-download-hero" class="btn btn-outline" href="#" download>
+            Download CV
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg>
+          </a>
+        </div>
       </div>
       <div class="hero-right">
-        <div class="availability"><span class="pulse-dot"></span> Available <span id="available-date"></span></div>
-        <div class="last-updated">Last updated: <span class="red" id="last-updated-date"></span></div>
+        <div class="status-badge"><span class="pulse-dot" aria-hidden="true"></span> <span id="status-text"></span></div>
+        <div class="hero-meta">
+          <div class="meta-line">Available <span class="accent" id="available-date"></span></div>
+          <div class="meta-line">Updated <span class="accent" id="last-updated-date"></span></div>
+        </div>
       </div>
     </section>
 
     <section class="section" id="about">
       <div class="section-label">001 / About</div>
-      <p id="about-text"></p>
+      <div class="about-grid">
+        <div class="about-copy reveal">
+          <p id="about-text"></p>
+          <div class="about-chips" id="about-chips"></div>
+        </div>
+        <div class="about-stats" id="about-stats"></div>
+      </div>
     </section>
 
     <section class="section" id="projects">
@@ -256,14 +455,32 @@
 
     <section class="section" id="contact">
       <div class="section-label">004 / Contact</div>
-      <a id="contact-email" class="contact-email" href="#"></a>
+      <h2 class="contact-heading reveal">Let's build something.</h2>
+      <p class="contact-sub reveal">I'm a <span class="accent">Computer Science student currently applying for internships</span> — if you're hiring or just want to talk shop, get in touch.</p>
+      <div class="contact-cta-row reveal">
+        <a id="contact-email" class="btn btn-primary btn-large" href="#">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+          <span id="contact-email-text"></span>
+        </a>
+      </div>
+      <div class="contact-socials reveal">
+        <a id="contact-github" class="social-icon" href="#" target="_blank" rel="noopener noreferrer" aria-label="Cezary Cichy on GitHub">
+          <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .5C5.73.5.5 5.74.5 12.02c0 5.1 3.29 9.4 7.86 10.93.58.11.79-.25.79-.56 0-.28-.01-1.02-.02-2-3.2.7-3.88-1.54-3.88-1.54-.53-1.34-1.29-1.7-1.29-1.7-1.05-.72.08-.71.08-.71 1.17.08 1.78 1.2 1.78 1.2 1.03 1.77 2.71 1.26 3.37.96.1-.75.4-1.26.73-1.55-2.55-.29-5.24-1.28-5.24-5.71 0-1.26.45-2.29 1.19-3.09-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.18 1.18a11.06 11.06 0 0 1 5.79 0c2.2-1.49 3.17-1.18 3.17-1.18.64 1.59.24 2.76.12 3.05.74.8 1.19 1.83 1.19 3.09 0 4.44-2.7 5.42-5.26 5.7.41.36.78 1.08.78 2.17 0 1.57-.01 2.83-.01 3.22 0 .31.21.68.8.56A10.53 10.53 0 0 0 23.5 12.02C23.5 5.74 18.27.5 12 .5z"/></svg>
+        </a>
+        <a id="contact-linkedin" class="social-icon" href="#" target="_blank" rel="noopener noreferrer" aria-label="Cezary Cichy on LinkedIn">
+          <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.45 20.45h-3.55v-5.57c0-1.33-.02-3.03-1.85-3.03-1.86 0-2.15 1.45-2.15 2.94v5.66H9.35V9h3.41v1.56h.05c.47-.9 1.63-1.85 3.36-1.85 3.6 0 4.26 2.37 4.26 5.45v6.29zM5.34 7.43a2.06 2.06 0 1 1 0-4.12 2.06 2.06 0 0 1 0 4.12zM7.12 20.45H3.56V9h3.56v11.45z"/></svg>
+        </a>
+      </div>
     </section>
 
     <footer>
-      <div class="footer-left">
-        <a id="footer-github" href="#" target="_blank" rel="noopener noreferrer">GitHub</a>
-        &nbsp;|&nbsp;
-        <a id="footer-linkedin" href="#" target="_blank" rel="noopener noreferrer">LinkedIn</a>
+      <div class="footer-left" id="footer-socials">
+        <a id="footer-github" class="social-icon" href="#" target="_blank" rel="noopener noreferrer" aria-label="Cezary Cichy on GitHub">
+          <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .5C5.73.5.5 5.74.5 12.02c0 5.1 3.29 9.4 7.86 10.93.58.11.79-.25.79-.56 0-.28-.01-1.02-.02-2-3.2.7-3.88-1.54-3.88-1.54-.53-1.34-1.29-1.7-1.29-1.7-1.05-.72.08-.71.08-.71 1.17.08 1.78 1.2 1.78 1.2 1.03 1.77 2.71 1.26 3.37.96.1-.75.4-1.26.73-1.55-2.55-.29-5.24-1.28-5.24-5.71 0-1.26.45-2.29 1.19-3.09-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.18 1.18a11.06 11.06 0 0 1 5.79 0c2.2-1.49 3.17-1.18 3.17-1.18.64 1.59.24 2.76.12 3.05.74.8 1.19 1.83 1.19 3.09 0 4.44-2.7 5.42-5.26 5.7.41.36.78 1.08.78 2.17 0 1.57-.01 2.83-.01 3.22 0 .31.21.68.8.56A10.53 10.53 0 0 0 23.5 12.02C23.5 5.74 18.27.5 12 .5z"/></svg>
+        </a>
+        <a id="footer-linkedin" class="social-icon" href="#" target="_blank" rel="noopener noreferrer" aria-label="Cezary Cichy on LinkedIn">
+          <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.45 20.45h-3.55v-5.57c0-1.33-.02-3.03-1.85-3.03-1.86 0-2.15 1.45-2.15 2.94v5.66H9.35V9h3.41v1.56h.05c.47-.9 1.63-1.85 3.36-1.85 3.6 0 4.26 2.37 4.26 5.45v6.29zM5.34 7.43a2.06 2.06 0 1 1 0-4.12 2.06 2.06 0 0 1 0 4.12zM7.12 20.45H3.56V9h3.56v11.45z"/></svg>
+        </a>
       </div>
       <div id="footer-currently"></div>
     </footer>
@@ -285,21 +502,26 @@
     initials: "CC",
     year: "2026",
     location: "navan, ireland — cs student",
-    tagline: "Backend developer in progress. CS student at Maynooth University, looking for internships.",
+    role: "Computer Science Student & Developer",
+    tagline: "Computer Science student at Maynooth University with a growing focus on backend development. I like solving real problems by building practical, working software — not just talking about it.",
     available: "Jan 2027",
     lastUpdated: "Jul 2026",
-    currently: "watching the world cup",
+    currently: "applying for internships",
+    university: "Maynooth University",
+    focus: "Java Backend",
+    codingStartAge: "6",
+    focusAreas: ["Computer Science", "Backend Development", "Practical Projects", "Continuous Learning"],
     email: "cezarycichy03@gmail.com",
     github: "https://github.com/CezaryCichy",
     linkedin: "https://www.linkedin.com/in/cezary-cichy-b894b0389/",
     cvUrl: "cv.pdf",
-    // Wrap words in **double asterisks** to render them bold/red in the About section.
+    // Wrap words in **double asterisks** to render them bold/accent-colored in the About section.
     aboutText: "Been hands-on with computers since I was **6 years old** — built my first PC at 9 and never stopped tinkering. I love problem solving, finding the simplest fix to a complicated mess. I study **Computer Science at Maynooth University** and specialise in **Java backend development**. I day trade the NY session occasionally, which pushed me to build a proper trade journal to track my own performance. Looking for a placement starting **January 2027**.",
 /*
 
 
 
-    
+
 SKILLS
 
 
@@ -315,6 +537,7 @@ skills: {
     projects: [
       {
         pinned: true,
+        featured: true,
         title: "GroupEat",
         desc: "Real-time group food ordering app — friends join a shared session with a 5-digit code and watch a live basket update instantly over WebSockets as everyone adds their own items.",
         tags: ["Java", "Spring Boot", "WebSocket/STOMP", "REST API"],
@@ -355,6 +578,9 @@ skills: {
     renderSkills();
     renderContact();
     renderFooter();
+    initNav();
+    initScrollReveal();
+    initSnake();
   });
 
   function renderNav(){
@@ -369,16 +595,35 @@ skills: {
     const last = parts.pop();
     const first = parts.join(' ');
     document.getElementById('hero-name').innerHTML =
-      `${first.toUpperCase()}<br><span class="red">${last.toUpperCase()}.</span>`;
+      `${first.toUpperCase()}<br><span class="accent">${last.toUpperCase()}.</span>`;
 
+    document.getElementById('hero-role').textContent = CONFIG.role;
     document.getElementById('hero-subtitle').textContent = CONFIG.tagline;
+    document.getElementById('status-text').textContent = `Currently ${CONFIG.currently}`;
     document.getElementById('available-date').textContent = CONFIG.available;
     document.getElementById('last-updated-date').textContent = CONFIG.lastUpdated;
+    document.getElementById('cv-download-hero').href = CONFIG.cvUrl;
   }
 
   function renderAbout(){
     const html = CONFIG.aboutText.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
     document.getElementById('about-text').innerHTML = html;
+
+    document.getElementById('about-chips').innerHTML =
+      CONFIG.focusAreas.map(f => `<span class="about-chip">${f}</span>`).join('');
+
+    const stats = [
+      { value: CONFIG.codingStartAge, label: 'age started coding' },
+      { value: 'CS', label: CONFIG.university },
+      { value: CONFIG.focus, label: 'primary focus' },
+      { value: CONFIG.available, label: 'available from' }
+    ];
+    document.getElementById('about-stats').innerHTML = stats.map((s, i) => `
+      <div class="about-stat reveal" style="--delay:${i * 70}ms">
+        <div class="about-stat-value">${s.value}</div>
+        <div class="about-stat-label">${s.label}</div>
+      </div>
+    `).join('');
   }
 
   let showingAll = false;
@@ -386,15 +631,22 @@ skills: {
     const grid = document.getElementById('projects-grid');
     grid.innerHTML = '';
 
-    CONFIG.projects.forEach(p => {
+    CONFIG.projects.forEach((p, i) => {
       const card = document.createElement('div');
-      card.className = 'project-card' + (p.pinned ? '' : ' hidden extra-card');
+      const classes = ['project-card', 'reveal'];
+      if (!p.pinned) classes.push('hidden', 'extra-card');
+      if (p.featured) classes.push('project-featured');
+      card.className = classes.join(' ');
+      card.style.setProperty('--delay', `${(i % 4) * 60}ms`);
       card.innerHTML = `
-        ${p.pinned ? '<div class="pin-label">📌 pinned</div>' : ''}
+        <span class="project-index" aria-hidden="true">${String(i + 1).padStart(2, '0')}</span>
+        ${p.pinned ? `<div class="pin-label">${p.featured ? '★ featured project' : '📌 pinned'}</div>` : ''}
         <h3>${p.title}</h3>
         <p>${p.desc}</p>
         <div class="tags">${p.tags.map(t => `<span>${t}</span>`).join('')}</div>
-        <a class="github-link" href="${p.github}" target="_blank" rel="noopener noreferrer">View on GitHub →</a>
+        <a class="github-link" href="${p.github}" target="_blank" rel="noopener noreferrer">
+          View on GitHub <span class="arrow" aria-hidden="true">→</span>
+        </a>
       `;
       grid.appendChild(card);
     });
@@ -405,7 +657,10 @@ skills: {
 
     btn.addEventListener('click', () => {
       showingAll = !showingAll;
-      document.querySelectorAll('.extra-card').forEach(c => c.classList.toggle('hidden', !showingAll));
+      document.querySelectorAll('.extra-card').forEach(c => {
+        c.classList.toggle('hidden', !showingAll);
+        if (showingAll) c.classList.add('is-visible');
+      });
       btn.textContent = showingAll ? '- show less' : '+ show more';
     });
   }
@@ -413,10 +668,11 @@ skills: {
   function renderSkills(){
     const grid = document.getElementById('skills-grid');
     grid.innerHTML = '';
-    Object.entries(CONFIG.skills).forEach(([category, items]) => {
+    Object.entries(CONFIG.skills).forEach(([category, items], i) => {
       const col = document.createElement('div');
-      col.className = 'skill-col';
-      col.innerHTML = `<h3>${category}</h3><ul>${items.map(i => `<li>${i}</li>`).join('')}</ul>`;
+      col.className = 'skill-col reveal';
+      col.style.setProperty('--delay', `${i * 60}ms`);
+      col.innerHTML = `<h3>${category}</h3><div class="skill-pills">${items.map(t => `<span class="skill-pill">${t}</span>`).join('')}</div>`;
       grid.appendChild(col);
     });
   }
@@ -424,75 +680,192 @@ skills: {
   function renderContact(){
     const email = document.getElementById('contact-email');
     email.href = `mailto:${CONFIG.email}`;
-    email.textContent = CONFIG.email;
+    document.getElementById('contact-email-text').textContent = CONFIG.email;
+    document.getElementById('contact-github').href = CONFIG.github;
+    document.getElementById('contact-linkedin').href = CONFIG.linkedin;
   }
 
   function renderFooter(){
-    const gh = document.getElementById('footer-github');
-    gh.href = CONFIG.github;
-    const li = document.getElementById('footer-linkedin');
-    li.href = CONFIG.linkedin;
+    document.getElementById('footer-github').href = CONFIG.github;
+    document.getElementById('footer-linkedin').href = CONFIG.linkedin;
     document.getElementById('footer-currently').textContent = `currently: ${CONFIG.currently}`;
   }
 
   // ---------------------------------------------------------------------
-  // SNAKE BACKGROUND — auto-running, on by default, toggled at page bottom
+  // NAV — mobile menu, sticky-scroll state, active-section spy
   // ---------------------------------------------------------------------
-  (function(){
+  function initNav(){
+    const nav = document.getElementById('nav');
+    const toggle = document.getElementById('nav-toggle');
+    const menu = document.getElementById('nav-menu');
+
+    toggle.addEventListener('click', () => {
+      const open = menu.classList.toggle('open');
+      toggle.classList.toggle('open', open);
+      toggle.setAttribute('aria-expanded', String(open));
+      toggle.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
+      document.body.classList.toggle('nav-open', open);
+    });
+
+    menu.querySelectorAll('a').forEach(link => {
+      link.addEventListener('click', () => {
+        menu.classList.remove('open');
+        toggle.classList.remove('open');
+        toggle.setAttribute('aria-expanded', 'false');
+        toggle.setAttribute('aria-label', 'Open menu');
+        document.body.classList.remove('nav-open');
+      });
+    });
+
+    window.addEventListener('scroll', () => {
+      nav.classList.toggle('scrolled', window.scrollY > 8);
+    }, { passive: true });
+
+    const navLinks = document.querySelectorAll('.nav-link[data-nav]');
+    const sections = Array.from(navLinks)
+      .map(l => document.getElementById(l.dataset.nav))
+      .filter(Boolean);
+
+    if ('IntersectionObserver' in window && sections.length) {
+      const spy = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            navLinks.forEach(l => l.classList.toggle('active', l.dataset.nav === entry.target.id));
+          }
+        });
+      }, { rootMargin: '-45% 0px -50% 0px', threshold: 0 });
+      sections.forEach(s => spy.observe(s));
+    }
+  }
+
+  // ---------------------------------------------------------------------
+  // SCROLL REVEAL — respects prefers-reduced-motion
+  // ---------------------------------------------------------------------
+  function initScrollReveal(){
+    const items = document.querySelectorAll('.reveal');
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    if (reduced || !('IntersectionObserver' in window)) {
+      items.forEach(el => el.classList.add('is-visible'));
+      return;
+    }
+
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('is-visible');
+          io.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.15, rootMargin: '0px 0px -40px 0px' });
+
+    items.forEach(el => io.observe(el));
+  }
+
+  // ---------------------------------------------------------------------
+  // SNAKE BACKGROUND — ambient generative art by default; the "activate
+  // snake" button layers the classic food-chasing game on top without
+  // changing its scoring/movement logic, just how it's rendered.
+  // ---------------------------------------------------------------------
+  function initSnake(){
     const canvas = document.getElementById('snake-bg');
     const ctx = canvas.getContext('2d');
     const toggleBtn = document.getElementById('snake-toggle');
     const scoreEl = document.getElementById('snake-score');
+
+    const PALETTE = { orange: [255,107,53], peach: [247,197,159], cream: [239,239,208], deepBlue: [0,78,137], blue: [26,101,158] };
+    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const isMobile = () => window.innerWidth < 760;
+
     const CELL = 20;
     const START_LENGTH = 6;
-    let cols, rows, snake, food, tickHandle, running = false, score = 0;
+    let cols, rows, docW = 0, docH = 0;
+    let snake, prevSnake, food, tickHandle, score = 0;
+    let mode = 'idle'; // 'idle' | 'active'
+    let lastTickTime = 0;
+    let displayOpacity = 0;
+    let avoidRects = [];
+
+    function lerpColor(a, b, t){
+      return [Math.round(a[0]+(b[0]-a[0])*t), Math.round(a[1]+(b[1]-a[1])*t), Math.round(a[2]+(b[2]-a[2])*t)];
+    }
+    function lerpAngle(a, b, t){
+      const diff = ((b - a + Math.PI * 3) % (Math.PI * 2)) - Math.PI;
+      return a + diff * t;
+    }
+    function isNearContent(x, y){
+      for (let i = 0; i < avoidRects.length; i++) {
+        const r = avoidRects[i];
+        if (x > r.left && x < r.right && y > r.top && y < r.bottom) return r;
+      }
+      return null;
+    }
+    function computeAvoidRects(){
+      const selectors = '.hero-left,.hero-right,.about-copy,.about-stats,.project-card,.skill-col,.contact-heading,.contact-sub,.contact-cta-row,nav.nav';
+      const pad = 22;
+      avoidRects = Array.from(document.querySelectorAll(selectors)).map(el => {
+        const r = el.getBoundingClientRect();
+        return {
+          left: r.left + window.scrollX - pad, right: r.right + window.scrollX + pad,
+          top: r.top + window.scrollY - pad, bottom: r.bottom + window.scrollY + pad
+        };
+      }).filter(r => r.right > r.left && r.bottom > r.top);
+    }
 
     function updateScore(){
       scoreEl.textContent = `score: ${score}`;
     }
 
     function resize(){
-      const docHeight = Math.max(document.documentElement.scrollHeight, window.innerHeight);
-      const docWidth = Math.max(document.documentElement.scrollWidth, window.innerWidth);
-      canvas.width = docWidth;
-      canvas.height = docHeight;
-      cols = Math.max(1, Math.floor(canvas.width / CELL));
-      rows = Math.max(1, Math.floor(canvas.height / CELL));
+      docH = Math.max(document.documentElement.scrollHeight, window.innerHeight);
+      docW = Math.max(document.documentElement.scrollWidth, window.innerWidth);
+      canvas.width = docW;
+      canvas.height = docH;
+      cols = Math.max(1, Math.floor(docW / CELL));
+      rows = Math.max(1, Math.floor(docH / CELL));
     }
-    window.addEventListener('resize', resize);
+
+    let resizeTimeout;
+    window.addEventListener('resize', () => {
+      resize();
+      clearTimeout(resizeTimeout);
+      resizeTimeout = setTimeout(computeAvoidRects, 150);
+    });
     let scrollTimeout;
     window.addEventListener('scroll', () => {
-      if (!running) return;
+      if (mode !== 'active') return;
       clearTimeout(scrollTimeout);
       scrollTimeout = setTimeout(() => {
         if (!isFoodInView()) spawnFood();
       }, 200);
     }, { passive: true });
     resize();
+    computeAvoidRects();
 
     function resync(){
       resize();
-      if (running && food && !isFoodInView()) spawnFood();
+      computeAvoidRects();
+      if (mode === 'active' && food && !isFoodInView()) spawnFood();
     }
     window.addEventListener('load', resync);
     if (document.fonts && document.fonts.ready) {
       document.fonts.ready.then(resync);
     }
 
+    // -- classic grid game state (logic unchanged from the original snake) --
     function reset(){
       resize();
       const startX = Math.floor(cols / 2);
       const startY = Math.floor(rows / 2);
       snake = [];
       for (let i = 0; i < START_LENGTH; i++) snake.push({ x: startX - i, y: startY });
+      prevSnake = snake.map(s => ({ ...s }));
       score = 0;
       updateScore();
       spawnFood();
     }
 
     function spawnFood(){
-      // Prefer spawning within the user's current viewport so food doesn't
-      // land somewhere they'd have to scroll to see.
       const viewCols = Math.max(1, Math.floor(window.innerWidth / CELL));
       const viewRows = Math.max(1, Math.floor(window.innerHeight / CELL));
       const minCol = Math.min(Math.floor(window.scrollX / CELL), Math.max(0, cols - viewCols));
@@ -566,57 +939,352 @@ skills: {
       }
     }
 
-    function drawApple(){
-      const x = food.x * CELL;
-      const y = food.y * CELL;
-
-      // flat square block, brutalist style — solid red with a hollow outline
-      ctx.fillStyle = 'rgba(192,57,43,0.95)';
-      ctx.fillRect(x, y, CELL - 2, CELL - 2);
-      ctx.strokeStyle = 'rgba(10,10,10,0.9)';
-      ctx.lineWidth = 2;
-      ctx.strokeRect(x + 3, y + 3, CELL - 8, CELL - 8);
+    function currentHeadPixel(){
+      if (mode === 'active' && snake && snake[0]) {
+        return { x: snake[0].x * CELL + CELL / 2, y: snake[0].y * CELL + CELL / 2 };
+      }
+      return idle.head;
     }
 
-    function draw(){
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      snake.forEach((seg, i) => {
-        const alpha = Math.max(0.15, 1 - i / snake.length);
-        ctx.fillStyle = `rgba(192,57,43,${alpha})`;
-        ctx.fillRect(seg.x * CELL, seg.y * CELL, CELL - 2, CELL - 2);
+    // -- ambient idle snake: continuous, organic wandering art piece --
+    const idle = {
+      head: { x: 0, y: 0 },
+      angle: Math.random() * Math.PI * 2,
+      targetAngle: Math.random() * Math.PI * 2,
+      points: [],
+      wanderTimer: 0,
+      localOpacity: 1
+    };
+
+    function initIdlePosition(){
+      idle.head.x = docW * (0.35 + Math.random() * 0.3);
+      idle.head.y = Math.min(320, docH * 0.18);
+      idle.points = [];
+      for (let i = 0; i < idleSegmentCount() + 2; i++) idle.points.push({ x: idle.head.x, y: idle.head.y });
+    }
+    function idleSegmentCount(){ return isMobile() ? 11 : 19; }
+    function idleSpeed(){ return isMobile() ? 0.32 : 0.5; }
+    function idleSpacing(){ return isMobile() ? 10 : 9; }
+
+    // -- cursor: subtle influence only, never direct following --
+    const cursor = { x: 0, y: 0, active: false, speed: 0, lastX: 0, lastY: 0, lastT: 0 };
+    window.addEventListener('mousemove', (e) => {
+      const x = e.pageX, y = e.pageY;
+      const now = performance.now();
+      if (cursor.lastT) {
+        const dt = now - cursor.lastT;
+        if (dt > 0) {
+          const dist = Math.hypot(x - cursor.lastX, y - cursor.lastY);
+          cursor.speed = cursor.speed * 0.7 + Math.min(dist / dt * 16.67, 60) * 0.3;
+        }
+      }
+      cursor.x = x; cursor.y = y; cursor.active = true;
+      cursor.lastX = x; cursor.lastY = y; cursor.lastT = now;
+    }, { passive: true });
+
+    // -- rare easter eggs: trace "CC", "</>" or a small circle --
+    let eggTimer = 45000 + Math.random() * 45000;
+    let egg = null;
+
+    function buildEggPath(kind, cx, cy){
+      const pts = [];
+      if (kind === 'circle') {
+        const r = 42;
+        for (let a = 0; a <= Math.PI * 2 + 0.001; a += Math.PI / 14) pts.push({ x: cx + Math.cos(a) * r, y: cy + Math.sin(a) * r });
+      } else if (kind === 'cc') {
+        const r = 26;
+        [0, 1].forEach(ci => {
+          const ox = cx + (ci - 0.5) * r * 2.4;
+          for (let a = 0.35 * Math.PI; a <= 1.65 * Math.PI; a += Math.PI / 12) {
+            pts.push({ x: ox + Math.cos(a) * r, y: cy + Math.sin(a) * r });
+          }
+        });
+      } else {
+        pts.push(
+          { x: cx - 36, y: cy - 22 }, { x: cx - 52, y: cy }, { x: cx - 36, y: cy + 22 },
+          { x: cx - 8, y: cy + 28 }, { x: cx + 8, y: cy - 28 },
+          { x: cx + 36, y: cy - 22 }, { x: cx + 52, y: cy }, { x: cx + 36, y: cy + 22 }
+        );
+      }
+      return pts;
+    }
+
+    function burstParticles(pos){
+      for (let i = 0; i < 6; i++) {
+        const a = Math.random() * Math.PI * 2;
+        particles.push({ x: pos.x, y: pos.y, vx: Math.cos(a) * 0.6, vy: Math.sin(a) * 0.6, life: 1, decay: 0.018, r: 1.5, color: PALETTE.orange });
+      }
+    }
+
+    // -- small ambient particle pool --
+    let particles = [];
+    function maybeSpawnParticle(pos, chance){
+      if (Math.random() >= chance) return;
+      const colors = [PALETTE.orange, PALETTE.cream, PALETTE.blue];
+      particles.push({
+        x: pos.x + (Math.random() - 0.5) * 16, y: pos.y + (Math.random() - 0.5) * 16,
+        vx: (Math.random() - 0.5) * 0.15, vy: (Math.random() - 0.5) * 0.15,
+        life: 1, decay: 0.006 + Math.random() * 0.006, r: 1 + Math.random() * 1.5,
+        color: colors[Math.floor(Math.random() * colors.length)]
       });
-      drawApple();
+    }
+    function updateParticles(dt){
+      const cap = isMobile() ? 4 : 10;
+      for (let i = particles.length - 1; i >= 0; i--) {
+        const p = particles[i];
+        const f = dt / 16.67;
+        p.x += p.vx * f; p.y += p.vy * f;
+        p.life -= p.decay * f;
+        if (p.life <= 0) particles.splice(i, 1);
+      }
+      if (particles.length > cap) particles.splice(0, particles.length - cap);
+    }
+    function drawParticles(){
+      particles.forEach(p => {
+        ctx.globalAlpha = Math.max(0, p.life) * 0.55;
+        ctx.fillStyle = `rgb(${p.color.join(',')})`;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+        ctx.fill();
+      });
+      ctx.globalAlpha = 1;
+      if (particles.length > 1) {
+        for (let i = 0; i < particles.length; i++) {
+          for (let j = i + 1; j < particles.length; j++) {
+            const dx = particles[i].x - particles[j].x, dy = particles[i].y - particles[j].y;
+            const d = Math.hypot(dx, dy);
+            if (d < 36) {
+              ctx.strokeStyle = `rgba(247,197,159,${0.14 * Math.min(particles[i].life, particles[j].life)})`;
+              ctx.lineWidth = 1;
+              ctx.beginPath();
+              ctx.moveTo(particles[i].x, particles[i].y);
+              ctx.lineTo(particles[j].x, particles[j].y);
+              ctx.stroke();
+            }
+          }
+        }
+      }
     }
 
-    function tick(){
-      step();
-      draw();
+    function updateIdle(dt){
+      const speedMul = dt / 16.67;
+
+      if (egg) {
+        const target = egg.points[egg.idx];
+        const dx = target.x - idle.head.x, dy = target.y - idle.head.y;
+        idle.targetAngle = Math.atan2(dy, dx);
+        idle.angle = lerpAngle(idle.angle, idle.targetAngle, 0.28);
+        if (Math.hypot(dx, dy) < 6) {
+          egg.idx++;
+          if (egg.idx >= egg.points.length) { burstParticles(idle.head); egg = null; }
+        }
+        egg && (egg.elapsed += dt);
+        if (egg && egg.elapsed > 9000) egg = null;
+      } else {
+        eggTimer -= dt;
+        if (eggTimer <= 0) {
+          eggTimer = 55000 + Math.random() * 70000;
+          if (!isMobile() && !reducedMotion && Math.random() < 0.55) {
+            const kinds = ['circle', 'cc', 'chevron'];
+            const cx = Math.min(Math.max(idle.head.x, 160), docW - 160);
+            const cy = Math.min(Math.max(idle.head.y, 160), docH - 160);
+            egg = { points: buildEggPath(kinds[Math.floor(Math.random() * kinds.length)], cx, cy), idx: 0, elapsed: 0 };
+          }
+        }
+
+        idle.wanderTimer -= dt;
+        if (idle.wanderTimer <= 0) {
+          idle.targetAngle += (Math.random() - 0.5) * 1.3;
+          idle.wanderTimer = 1800 + Math.random() * 2400;
+        }
+
+        if (cursor.active) {
+          const dx = cursor.x - idle.head.x, dy = cursor.y - idle.head.y;
+          const dist = Math.hypot(dx, dy);
+          if (dist > 6 && dist < 900) {
+            const pull = 0.008 + Math.min(cursor.speed / 1400, 1) * 0.02;
+            idle.targetAngle = lerpAngle(idle.targetAngle, Math.atan2(dy, dx), pull);
+          }
+          if (performance.now() - cursor.lastT > 3000) cursor.active = false;
+        }
+        cursor.speed *= 0.98;
+
+        const margin = 130;
+        if (idle.head.x < margin) idle.targetAngle = lerpAngle(idle.targetAngle, 0, 0.06);
+        if (idle.head.x > docW - margin) idle.targetAngle = lerpAngle(idle.targetAngle, Math.PI, 0.06);
+        if (idle.head.y < margin) idle.targetAngle = lerpAngle(idle.targetAngle, Math.PI / 2, 0.06);
+        if (idle.head.y > docH - margin) idle.targetAngle = lerpAngle(idle.targetAngle, -Math.PI / 2, 0.06);
+
+        const near = isNearContent(idle.head.x, idle.head.y);
+        if (near) {
+          const cx = (near.left + near.right) / 2, cy = (near.top + near.bottom) / 2;
+          idle.targetAngle = lerpAngle(idle.targetAngle, Math.atan2(idle.head.y - cy, idle.head.x - cx), 0.09);
+        }
+        idle.localOpacity += ((near ? 0.3 : 1) - idle.localOpacity) * 0.05;
+
+        idle.angle = lerpAngle(idle.angle, idle.targetAngle, 0.035);
+      }
+
+      const speed = idleSpeed() * speedMul;
+      idle.head.x += Math.cos(idle.angle) * speed;
+      idle.head.y += Math.sin(idle.angle) * speed;
+
+      const last = idle.points[idle.points.length - 1];
+      if (!last || Math.hypot(idle.head.x - last.x, idle.head.y - last.y) >= idleSpacing()) {
+        idle.points.push({ x: idle.head.x, y: idle.head.y });
+        const maxPts = idleSegmentCount() + 2;
+        if (idle.points.length > maxPts) idle.points.shift();
+      }
     }
 
-    function start(){
-      reset();
-      canvas.classList.add('active');
-      running = true;
-      tickHandle = setInterval(tick, 110);
-      toggleBtn.textContent = '> deactivate snake';
-      scoreEl.style.display = 'inline';
+    function drawIdleSnake(){
+      const pts = idle.points;
+      const n = pts.length;
+      if (n < 2) return;
+      for (let i = 0; i < n - 1; i++) {
+        const t = i / (n - 1);
+        const alpha = 0.15 + 0.85 * t;
+        const color = lerpColor(PALETTE.blue, PALETTE.orange, t);
+        ctx.strokeStyle = `rgba(${color[0]},${color[1]},${color[2]},${alpha})`;
+        ctx.lineWidth = 1.5 + 3.5 * t;
+        ctx.lineCap = 'round';
+        ctx.beginPath();
+        ctx.moveTo(pts[i].x, pts[i].y);
+        ctx.lineTo(pts[i + 1].x, pts[i + 1].y);
+        ctx.stroke();
+      }
+      const head = pts[n - 1];
+      ctx.save();
+      ctx.shadowColor = 'rgba(255,107,53,0.55)';
+      ctx.shadowBlur = isMobile() ? 4 : 8;
+      ctx.fillStyle = 'rgba(255,107,53,0.92)';
+      ctx.beginPath();
+      ctx.arc(head.x, head.y, 4.5, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
     }
 
-    function stop(){
-      running = false;
-      clearInterval(tickHandle);
-      canvas.classList.remove('active');
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      toggleBtn.textContent = '> activate snake';
-      scoreEl.style.display = 'none';
+    function drawActiveSnake(t){
+      const n = snake.length;
+      for (let i = n - 1; i >= 0; i--) {
+        const cur = snake[i];
+        const prev = prevSnake[i] || cur;
+        let dx = cur.x - prev.x; if (Math.abs(dx) > cols / 2) dx = 0;
+        let dy = cur.y - prev.y; if (Math.abs(dy) > rows / 2) dy = 0;
+        const px = (prev.x + dx * t) * CELL + CELL / 2;
+        const py = (prev.y + dy * t) * CELL + CELL / 2;
+        const f = 1 - i / n;
+        const color = lerpColor(PALETTE.blue, PALETTE.orange, f);
+        const alpha = Math.max(0.3, f);
+        const radius = (i === 0 ? 8 : 5.5) * (0.6 + 0.4 * f);
+
+        if (i === 0) {
+          ctx.save();
+          ctx.shadowColor = 'rgba(255,107,53,0.6)';
+          ctx.shadowBlur = isMobile() ? 5 : 10;
+          ctx.fillStyle = `rgba(${color[0]},${color[1]},${color[2]},${alpha})`;
+          ctx.beginPath(); ctx.arc(px, py, radius, 0, Math.PI * 2); ctx.fill();
+          ctx.restore();
+        } else {
+          ctx.fillStyle = `rgba(${color[0]},${color[1]},${color[2]},${alpha})`;
+          ctx.beginPath(); ctx.arc(px, py, radius, 0, Math.PI * 2); ctx.fill();
+        }
+      }
+      drawFood();
     }
 
-    toggleBtn.addEventListener('click', () => {
-      if (running) stop(); else start();
+    function drawFood(){
+      const x = food.x * CELL + CELL / 2, y = food.y * CELL + CELL / 2;
+      ctx.save();
+      ctx.shadowColor = 'rgba(255,107,53,0.5)';
+      ctx.shadowBlur = isMobile() ? 4 : 8;
+      ctx.fillStyle = 'rgba(255,107,53,0.95)';
+      ctx.beginPath(); ctx.arc(x, y, 7, 0, Math.PI * 2); ctx.fill();
+      ctx.strokeStyle = 'rgba(0,78,137,0.9)';
+      ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.arc(x, y, 7, 0, Math.PI * 2); ctx.stroke();
+      ctx.restore();
+    }
+
+    // -- master render loop --
+    let rafHandle = null;
+    let lastFrameTime = 0;
+
+    function frame(now){
+      rafHandle = requestAnimationFrame(frame);
+      if (!lastFrameTime) lastFrameTime = now;
+      let dt = now - lastFrameTime;
+      lastFrameTime = now;
+      if (dt > 100) dt = 16.67;
+
+      ctx.clearRect(0, 0, docW, docH);
+
+      let targetOpacity;
+      if (mode === 'idle') {
+        updateIdle(dt);
+        if (!reducedMotion) maybeSpawnParticle(idle.head, isMobile() ? 0.008 : 0.018);
+        updateParticles(dt);
+        drawParticles();
+        drawIdleSnake();
+        targetOpacity = idle.localOpacity * (isMobile() ? 0.12 : 0.16);
+      } else {
+        const t = reducedMotion ? 1 : Math.min(1, (now - lastTickTime) / 110);
+        const headPx = currentHeadPixel();
+        if (!reducedMotion) maybeSpawnParticle(headPx, isMobile() ? 0.015 : 0.04);
+        updateParticles(dt);
+        drawParticles();
+        drawActiveSnake(t);
+        const near = isNearContent(headPx.x, headPx.y);
+        targetOpacity = near ? 0.22 : (isMobile() ? 0.4 : 0.48);
+      }
+
+      displayOpacity += (targetOpacity - displayOpacity) * 0.05;
+      canvas.style.opacity = displayOpacity.toFixed(3);
+    }
+
+    function startLoop(){
+      if (!rafHandle && !document.hidden) {
+        lastFrameTime = 0;
+        rafHandle = requestAnimationFrame(frame);
+      }
+    }
+    function stopLoop(){
+      if (rafHandle) { cancelAnimationFrame(rafHandle); rafHandle = null; }
+    }
+
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) {
+        stopLoop();
+      } else if (mode === 'active' || !reducedMotion) {
+        startLoop();
+      }
     });
 
-    start();
-  })();
+    toggleBtn.addEventListener('click', () => {
+      if (mode === 'active') {
+        mode = 'idle';
+        clearInterval(tickHandle);
+        toggleBtn.textContent = '> activate snake';
+        scoreEl.style.display = 'none';
+        if (reducedMotion) { stopLoop(); canvas.style.opacity = '0'; displayOpacity = 0; }
+      } else {
+        mode = 'active';
+        reset();
+        lastTickTime = performance.now();
+        tickHandle = setInterval(() => {
+          prevSnake = snake.map(s => ({ x: s.x, y: s.y }));
+          step();
+          lastTickTime = performance.now();
+        }, 110);
+        toggleBtn.textContent = '> deactivate snake';
+        scoreEl.style.display = 'inline';
+        if (reducedMotion) startLoop();
+      }
+    });
+
+    initIdlePosition();
+    if (!reducedMotion) startLoop();
+  }
 </script>
 
 </body>
